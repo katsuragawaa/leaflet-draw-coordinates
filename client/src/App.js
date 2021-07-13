@@ -30,6 +30,7 @@ function App() {
     axios.get(`http://localhost:3001/api/${coordinates}`).then((response) => {
       // pega a resposta do servidor e salva no estado properties
       const properties = response.data;
+			// console.log(properties);
       setProperties(properties);
     });
   }, [polygonCoordinates]);
@@ -40,9 +41,9 @@ function App() {
         <div className='result-container'>
           <h2>Encontrado {properties.length} Imóveis:</h2>
           <ul>
-            {properties.map((p) => (
-              <li>{p.properties.name}</li>
-            ))}
+						{properties.map((p) => {
+              return <li key={p.id}>{p.properties.name}</li>;
+            })}
           </ul>
         </div>
       </main>
@@ -59,11 +60,11 @@ function App() {
           mode={ALL}
           eventHandlers={{
             markers: (event) => {
-							// se não existe um polígono no mapa, volta ao estado inicial
+              // se não existe um polígono no mapa, volta ao estado inicial
               if (freedrawRef.current.size() === 0) {
                 setPolygonCoordinates([]);
-							}
-							// se existe um polígono, transforma as coordenadas em uma lista e salva como o novo polígono
+              }
+              // se existe um polígono, transforma as coordenadas em uma lista e salva como o novo polígono
               if (event.latLngs[0]) {
                 const newPolygon = event.latLngs[0].map((coord) =>
                   Object.values(coord)
