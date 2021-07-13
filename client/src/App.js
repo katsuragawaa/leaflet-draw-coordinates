@@ -1,7 +1,7 @@
 import './App.css';
 import 'leaflet/dist/leaflet.css';
 
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import React, { useState, useRef, useEffect } from 'react';
 import L from 'leaflet';
 import Freedraw, { ALL } from 'react-leaflet-freedraw';
@@ -11,53 +11,40 @@ import mapPin from './assets/images/location.png';
 
 const mapPinIcon = L.icon({
   iconUrl: mapPin,
-  iconSize: [20,20],
-  iconAnchor: [29, 68],
-  popupAnchor: [170, 2],
+  iconSize: [20, 20],
+  iconAnchor: [0, 0],
+  popupAnchor: [10, -5],
 });
 
 const initialPosition = { lat: -25.441105, lng: -49.276855 };
 
-function SetInitialPosition() {
-  const map = useMapEvents({
-    click: () => {
-      map.locate();
-      console.log('pageloaded');
-    },
-    locationfound: (location) => {
-      console.log('location found:', location);
-      map.flyTo(location.latlng, 14);
-    },
-  });
-
-  return null;
-}
-
 function App() {
   const [polygonCoordinates, setPolygonCoordinates] = useState([]);
-  const [testCoordinates, setTestCoordinates] = useState([]);
+  const [properties, setProperties] = useState([]);
   const freedrawRef = useRef(null);
 
   useEffect(() => {
     console.log(polygonCoordinates);
-    axios.get('http://localhost:3001/').then((response) => {
+    const coordinates = JSON.stringify(polygonCoordinates);
+    axios.get(`http://localhost:3001/api/${coordinates}`).then((response) => {
       const properties = response.data;
       console.log(properties);
-      setTestCoordinates(properties);
+      setProperties(properties);
     });
   }, [polygonCoordinates]);
+
+  console.log(polygonCoordinates);
 
   return (
     <div id='page-map'>
       <main>
         <div className='result-container'>
-          [
-          {polygonCoordinates.map((coord) => (
-            <div key={coord[0] * Math.random()}>
-              [{coord[0]}, {coord[1]}],
-            </div>
-          ))}
-          ]
+          <h2>Encontrado {properties.length} Imóveis:</h2>
+          <ul>
+            {properties.map((prop) => (
+              <li>{prop.properties.name}</li>
+            ))}
+          </ul>
         </div>
       </main>
 
@@ -80,6 +67,9 @@ function App() {
                 'Polygons:',
                 freedrawRef.current.size()
               );
+              if (freedrawRef.current.size() === 0) {
+                setPolygonCoordinates([]);
+              }
               if (event.latLngs[0]) {
                 const newPolygon = event.latLngs[0].map((coord) =>
                   Object.values(coord)
@@ -92,16 +82,18 @@ function App() {
           ref={freedrawRef}
         />
 
-        {testCoordinates.map((coord) => {
-          console.log(coord);
+        {properties.map((prop) => {
           return (
             <Marker
               icon={mapPinIcon}
               position={{
-                lat: coord.coordinates[0],
-                lng: coord.coordinates[1],
+                lat: prop.location.coordinates[0],
+                lng: prop.location.coordinates[1],
               }}
-            ></Marker>
+              key={prop.id}
+            >
+              <Popup>{prop.properties.name}</Popup>
+            </Marker>
           );
         })}
       </MapContainer>

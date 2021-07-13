@@ -4,8 +4,8 @@
 }
 
 .result-container {
-  width: 500px;
-	height: 90vh;
+  width: 450px;
+  height: 90vh;
 
   background: #ffffff;
   border: 1px solid #d3e2e5;
@@ -17,7 +17,25 @@
   top: 30px;
   right: 20px;
 
+  overflow-y: scroll;
+  height: 93vh;
+
   z-index: 1;
+}
+
+h2 {
+	font-weight: 800;
+	font-size: 28px;
+	margin: 30px 0;
+}
+
+ul {
+	margin-left: 20px;
+	list-style-type: circle;
+}
+
+li {
+	padding-top: 5px;
 }
 
 #page-map .leaflet-container {

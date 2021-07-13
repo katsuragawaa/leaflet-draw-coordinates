@@ -11,3 +11,7 @@ button,
 textarea {
   font: 600 18px Nunito, sans-serif;
 }
+
+::-webkit-scrollbar {
+  width: 5px;
+}
