@@ -1,9 +1,8 @@
+// script pra criar alguns pontos do banco de dados para teste
+
 const mongoose = require('mongoose');
-const GeoJSON = require('mongoose-geojson-schema');
-const async = require('async');
 require('dotenv').config();
 
-// specify DB shape and date types
 const propertiesSchema = new mongoose.Schema({
   location: {
     type: {
@@ -26,7 +25,6 @@ mongoose.connect(process.env.MONGODB_URL, {
   useCreateIndex: true,
 });
 
-// modify all instances of the models produced with noteSchema
 propertiesSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
@@ -35,7 +33,6 @@ propertiesSchema.set('toJSON', {
   },
 });
 
-// constructor compiled from schema created before, export CommonJS format
 const Properties = mongoose.model('Properties', propertiesSchema);
 
 const test = [
@@ -67,6 +64,7 @@ const test = [
   [-25.40901206215787, -49.27316665649414],
 ];
 
+// salva as coordenadas e cria um nome aleatório
 const saveProperties = async (coord) => {
   const properties = new Properties({
     location: {

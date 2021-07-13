@@ -1,10 +1,10 @@
 import './App.css';
 import 'leaflet/dist/leaflet.css';
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import React, { useState, useRef, useEffect } from 'react';
-import L from 'leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import Freedraw, { ALL } from 'react-leaflet-freedraw';
+import L from 'leaflet';
 import axios from 'axios';
 
 import mapPin from './assets/images/location.png';
@@ -16,6 +16,7 @@ const mapPinIcon = L.icon({
   popupAnchor: [10, -5],
 });
 
+// posição que o mapa é inicializado
 const initialPosition = { lat: -25.441105, lng: -49.276855 };
 
 function App() {
@@ -23,17 +24,15 @@ function App() {
   const [properties, setProperties] = useState([]);
   const freedrawRef = useRef(null);
 
+  // conecta com o servidor toda vez que o polígono muda
   useEffect(() => {
-    console.log(polygonCoordinates);
     const coordinates = JSON.stringify(polygonCoordinates);
     axios.get(`http://localhost:3001/api/${coordinates}`).then((response) => {
+      // pega a resposta do servidor e salva no estado properties
       const properties = response.data;
-      console.log(properties);
       setProperties(properties);
     });
   }, [polygonCoordinates]);
-
-  console.log(polygonCoordinates);
 
   return (
     <div id='page-map'>
@@ -41,8 +40,8 @@ function App() {
         <div className='result-container'>
           <h2>Encontrado {properties.length} Imóveis:</h2>
           <ul>
-            {properties.map((prop) => (
-              <li>{prop.properties.name}</li>
+            {properties.map((p) => (
+              <li>{p.properties.name}</li>
             ))}
           </ul>
         </div>
@@ -53,7 +52,6 @@ function App() {
         zoom={13}
         style={{ width: '100%', height: '100%' }}
       >
-        {/* <SetInitialPosition /> */}
         <TileLayer
           url={`https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.REACT_APP_ACCESS_TOKEN_MAP_BOX}`}
         />
@@ -61,15 +59,11 @@ function App() {
           mode={ALL}
           eventHandlers={{
             markers: (event) => {
-              console.log(
-                'markers drawn - latLngs',
-                event.latLngs[0],
-                'Polygons:',
-                freedrawRef.current.size()
-              );
+							// se não existe um polígono no mapa, volta ao estado inicial
               if (freedrawRef.current.size() === 0) {
                 setPolygonCoordinates([]);
-              }
+							}
+							// se existe um polígono, transforma as coordenadas em uma lista e salva como o novo polígono
               if (event.latLngs[0]) {
                 const newPolygon = event.latLngs[0].map((coord) =>
                   Object.values(coord)
@@ -77,22 +71,21 @@ function App() {
                 setPolygonCoordinates(newPolygon);
               }
             },
-            mode: (event) => console.log('mode changed', event),
           }}
           ref={freedrawRef}
         />
 
-        {properties.map((prop) => {
+        {properties.map((p) => {
           return (
             <Marker
               icon={mapPinIcon}
               position={{
-                lat: prop.location.coordinates[0],
-                lng: prop.location.coordinates[1],
+                lat: p.location.coordinates[0],
+                lng: p.location.coordinates[1],
               }}
-              key={prop.id}
+              key={p.id}
             >
-              <Popup>{prop.properties.name}</Popup>
+              <Popup>{p.properties.name}</Popup>
             </Marker>
           );
         })}
