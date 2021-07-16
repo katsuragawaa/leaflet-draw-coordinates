@@ -6,5 +6,7 @@
 
 Tech used: 
 - React 
+- Leaflet
+- Mapbox
 - Node/Express 
 - MongoDB
