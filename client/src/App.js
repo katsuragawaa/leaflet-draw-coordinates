@@ -24,16 +24,26 @@ function App() {
   const [properties, setProperties] = useState([]);
   const freedrawRef = useRef(null);
 
-  // conecta com o servidor toda vez que o polígono muda
   useEffect(() => {
     const coordinates = JSON.stringify(polygonCoordinates);
     axios.get(`http://localhost:3001/api/${coordinates}`).then((response) => {
-      // pega a resposta do servidor e salva no estado properties
       const properties = response.data;
-			// console.log(properties);
       setProperties(properties);
     });
   }, [polygonCoordinates]);
+
+  function handleDraw(event) {
+    if (freedrawRef.current.size() === 0) {
+      setPolygonCoordinates([]);
+    }
+    
+    if (event.latLngs[0]) {
+      const newPolygon = event.latLngs[0].map((coord) =>
+        Object.values(coord)
+      );
+      setPolygonCoordinates(newPolygon);
+    }
+  }
 
   return (
     <div id='page-map'>
@@ -58,21 +68,7 @@ function App() {
         />
         <Freedraw
           mode={ALL}
-          eventHandlers={{
-            markers: (event) => {
-              // se não existe um polígono no mapa, volta ao estado inicial
-              if (freedrawRef.current.size() === 0) {
-                setPolygonCoordinates([]);
-              }
-              // se existe um polígono, transforma as coordenadas em uma lista e salva como o novo polígono
-              if (event.latLngs[0]) {
-                const newPolygon = event.latLngs[0].map((coord) =>
-                  Object.values(coord)
-                );
-                setPolygonCoordinates(newPolygon);
-              }
-            },
-          }}
+          eventHandlers={{ markers: handleDraw(event) }}
           ref={freedrawRef}
         />
 
